@@ -28,11 +28,25 @@ export enum MessageType {
     OUTPUT_CHUNK = "OUTPUT_CHUNK",
     OUTPUT_COMPLETE = "OUTPUT_COMPLETE",
     VERSION_FRIENDLY_TITLE = "VERSION_FRIENDLY_TITLE",
+    SEND_FEEDBACK = "SEND_FEEDBACK",
 
     // Errors
     SERVER_ERROR = "SERVER_ERROR",
     OPENAI_RATE_LIMIT_ERROR = "OPENAI_RATE_LIMIT_ERROR",
     OVER_MESSAGE_LIMIT_ERROR = "OVER_MESSAGE_LIMIT_ERROR",
+}
+
+// Feedback
+export interface FeedbackResponse {
+    ok: boolean;
+}
+
+export interface FeedbackArgs {
+    resultId: string;
+    anonymousId: string;
+    helpful: boolean;
+    userId: string;
+    comments?: string;
 }
 
 // Version Friendly Title
@@ -73,6 +87,7 @@ export interface GenerateNewOutputArgs {
 }
 
 export interface GenerateNewOutputResponse {
+    resultId: string;
     code: string;
     text: string;
 }
@@ -101,10 +116,12 @@ interface PulumiGPTApiMessage<M extends MessageType, D> {
 // Actions
 export type GenerateNewOutputAction = PulumiGPTApiMessage<MessageType.GENERATE_NEW_OUTPUT, GenerateNewOutputArgs>;
 export type CreateConnectionAction = PulumiGPTApiMessage<MessageType.CREATE_CONNECTION, CreateConnectionArgs>;
+export type SendFeedbackAction = PulumiGPTApiMessage<MessageType.SEND_FEEDBACK, FeedbackArgs>;
 
 export type Action =
     GenerateNewOutputAction |
-    CreateConnectionAction;
+    CreateConnectionAction |
+    SendFeedbackAction;
 
 // Responses
 export type OutputChunk = PulumiGPTApiMessage<MessageType.OUTPUT_CHUNK, OutputChunkResponse>;
@@ -115,6 +132,7 @@ export type CreateConnection = PulumiGPTApiMessage<MessageType.CREATE_CONNECTION
 export type VersionTitle = PulumiGPTApiMessage<MessageType.VERSION_FRIENDLY_TITLE, VersionFriendlyTitleResponse>;
 export type OpenAIRateLimit = PulumiGPTApiMessage<MessageType.OPENAI_RATE_LIMIT_ERROR, OpenAIRateLimitErrorResponse>;
 export type OverMessageLimit = PulumiGPTApiMessage<MessageType.OVER_MESSAGE_LIMIT_ERROR, OverMessageLimitErrorResponse>;
+export type SendFeedback = PulumiGPTApiMessage<MessageType.SEND_FEEDBACK, FeedbackResponse>;
 
 export type Response =
     GenerateNewOutput |
@@ -124,4 +142,5 @@ export type Response =
     CreateConnection |
     VersionTitle |
     OpenAIRateLimit |
-    OverMessageLimit;
+    OverMessageLimit |
+    SendFeedback;

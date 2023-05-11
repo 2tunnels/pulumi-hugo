@@ -6,6 +6,8 @@ import {
     OutputChunkResponse,
     CreateConnectionAction,
     ChatGptModel,
+    SendFeedbackAction,
+    GenerateNewOutputResponse,
 } from "./types";
 import { parseCookie } from "../../util/util";
 
@@ -23,7 +25,7 @@ export class PulumiAIClient {
         private url: string,
         private connectionOpenCallback: (event: Event) => void,
         private outputChunkCallback: (content: OutputChunkResponse) => void,
-        private outputCompleteCallback: () => void,
+        private outputCompleteCallback: (response: GenerateNewOutputResponse) => void,
         private overMessageLimitCallback: () => void,
         private overCapacityCallback: () => void,
         private errorCallback: (error: string) => void,
@@ -37,6 +39,10 @@ export class PulumiAIClient {
     private onMessage(event: MessageEvent) {
         const eventData: Response = JSON.parse(event.data);
 
+        if (eventData.type !== MessageType.OUTPUT_CHUNK) {
+            console.log(eventData);
+        }
+
         switch (eventData.type) {
             case MessageType.CREATE_CONNECTION:
                 this.connectionOpenCallback(event);
@@ -44,8 +50,11 @@ export class PulumiAIClient {
             case MessageType.OUTPUT_CHUNK:
                 this.outputChunkCallback(eventData.data);
                 break;
-            case MessageType.OUTPUT_COMPLETE:
-                this.outputCompleteCallback();
+            // case MessageType.OUTPUT_COMPLETE:
+            //     this.outputCompleteCallback();
+            //     break;
+            case MessageType.GENERATE_NEW_OUTPUT:
+                this.outputCompleteCallback(eventData.data);
                 break;
             case MessageType.OVER_MESSAGE_LIMIT_ERROR:
                 this.overMessageLimitCallback();
@@ -111,6 +120,21 @@ export class PulumiAIClient {
 
     public disconnect() {
         this.socket.close();
+    }
+
+    public sendFeedback(resultId: string, helpful: boolean, comments = "") {
+        const args: SendFeedbackAction = {
+            type: MessageType.SEND_FEEDBACK,
+            data: {
+                resultId,
+                comments,
+                helpful,
+                anonymousId: this.ajsAnonymousID,
+                userId: this.pulumiUserID || this.ajsUserID,
+            },
+        };
+
+        this.send(args);
     }
 
     public submit(language: Language, program: string, instructions: string, version: number, model: ChatGptModel) {
