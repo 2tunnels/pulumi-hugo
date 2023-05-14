@@ -1,0 +1,8 @@
+@import "../../node_modules/@algolia/autocomplete-theme-classic/dist/theme.min.css";
+
+.aa-Panel {
+
+    mark {
+        @apply bg-transparent border-b border-blue-400;
+    }
+}
