@@ -347,8 +347,6 @@ export class PulumiAI {
     }
 
     private onComplete(response: GenerateNewOutputResponse) {
-        console.log("output complete", response);
-
         const versionMarkup = marked.marked.parse(this.currentVersion.source.replace(" ⎸", ""));
         const markupWithButtons = this.addButtons(versionMarkup);
 
